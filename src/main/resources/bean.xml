@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 打开Spring的Annotation支持 -->
+	<context:annotation-config />
+	<!-- 设定Spring 去哪些包中找Annotation -->
+	<context:component-scan base-package="com.ctc" />
+
+
+	<!-- 导入Src目录下的jdbc.properties文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+
+	<bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="DataSource" />
+		<property name="configLocation"  value="classpath:sqlMapConfig.xml"/>
+	</bean>
+
+    <!-- 查找类路径下的映射器并自动将它们创建成 MapperFactoryBean.
+         MapperFactoryBean 创建的代理类实现了 UserMapper 接口,并且注入到应用程序中.
+         basePackage 属性是让你为映射器接口文件设置基本的包路径。 你可以使用分号或逗号 作为分隔符设置多于一个的包路径.
+    -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.ctc.Mapper" />
+	</bean>
+
+    <!-- 开启Spring的事务处理  -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="DataSource" />
+	</bean>
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+</beans>
